@@ -29,6 +29,8 @@ contract MyCustomToken {
         require(balances[msg.sender] >= _amount, "Insufficient balance.");
         balances[msg.sender] -= _amount;
         balances[_to] += _amount;
+        totalSupply -= _amount;
+
     }
 
     // Burn function to allow users to destroy their own tokens
