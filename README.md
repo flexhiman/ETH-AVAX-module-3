@@ -1,59 +1,47 @@
-# Create and mint Token
+# Create and Mint Token
 
-## Overview 
-- Here I have created a new smart contract named as MyCustomToken
-```solidity
+## Overview
+
+- Here I have imported the ERC20 contract from OpenZeppelin’s repository. The ERC20 contract provides the basic functionality for creating a standard ERC20 token which provides functions like transfer, approve, balanceof, etc.
+-  This imports the Ownable contract from OpenZeppelin, which allows certain functions to be restricted to the owner of the contract.
+```solidity 
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
-contract MyCustomToken {
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.8.0/contracts/token/ERC20/ERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.8.0/contracts/access/Ownable.sol";
 ```
 
-- Here I have declared public variables takenName, tokenAbbreviation, totalSupply of type String and initialized it with the value "CustomToken", "CTK", "0".  
-``` solidity
-    string public tokenName = "CustomToken";
-    string public tokenAbbreviation = "CTK";
-    uint public totalSupply = 0;
-    address public owner;
-```
-
-- This line defines a public mapping balances that maps an address to a uint. It stores the balance of tokens for each address.
+- Here I have defined a contract named CustomToken that inherits from ERC20 and Ownable contracts with the functionality of the both.
 ```solidity
-    mapping(address => uint) public balances;
+contract CustomToken is ERC20, Ownable {
 ```
 
-- I have created a constructor and set the owner variable to msg.sender.
+- This constructor runs only once when the contract is deployed.
 ```solidity
-    constructor() {
-        owner = msg.sender;
+    constructor() ERC20("CustomToken", "CTK") {
+```
+
+- This line mints 1000 tokens to the address that deployed the contract which is msg.sender.
+```solidity
+        _mint(msg.sender, 1000 * 10 ** decimals()); 
     }
 ```
 
-- I have created a function mint to mint new tokens. The 'require' statement checks if the caller of the function is the owner of the function or not. 
+- This function allows the owner to mint new tokens.
+- 'address to' will be the address that will be receiving the minted tokens.
+- 'unit256 amount' specifies the amount of tokens you want to mint.
 ```solidity
-    function mint(address _to, uint _amount) public {
-        require(msg.sender == owner, "Only the owner can mint tokens.");
-        totalSupply += _amount;
-        balances[_to] += _amount;
+    function mintTokens(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
     }
 ```
 
-- The transfer function transfers the tokens from sender to receiver. And 'require' statement checks if the caller of the function is the owner or not.
+- This function allows any user to burn their owntokens.
+- The 'unit256 amount' specifies the amount of tokens the user wants to burn.
 ```solidity
-    function transfer(address _to, uint _amount) public {
-        require(balances[msg.sender] >= _amount, "Insufficient balance.");
-        balances[msg.sender] -= _amount;
-        balances[_to] += _amount;
-        totalSupply -= _amount;
-
-    }
-```
-
-The burn function is to burn the tokens. And the 'require' statement checks if the caller of the function is the owner or not.
-```solidity
-    function burn(uint _amount) public {
-        require(balances[msg.sender] >= _amount, "Insufficient balance to burn.");
-        totalSupply -= _amount;
-        balances[msg.sender] -= _amount;
+    function burnTokens(uint256 amount) external {
+        _burn(msg.sender, amount);
     }
 }
+```
