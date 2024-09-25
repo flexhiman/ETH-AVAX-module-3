@@ -1,42 +1,24 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
-contract MyCustomToken {
+// Importing OpenZeppelin's ERC20 and Ownable contracts compatible with 0.8.19
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.8.0/contracts/token/ERC20/ERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.8.0/contracts/access/Ownable.sol";
 
-    // Public variables to store token details
-    string public tokenName = "CustomToken";
-    string public tokenAbbreviation = "CTK";
-    uint public totalSupply = 0;
-    address public owner;
+contract CustomToken is ERC20, Ownable {
 
-    // Mapping to store balances of addresses
-    mapping(address => uint) public balances;
-
-    // Constructor to initialize the owner as the contract deployer
-    constructor() {
-        owner = msg.sender;
+    // Constructor that sets the token name, symbol, and mints an initial supply to the deployer
+    constructor() ERC20("CustomToken", "CTK") {
+        _mint(msg.sender, 1000 * 10 ** decimals());  // Mint 1000 tokens (adjust as needed) to the deployer
     }
 
-    // Function to mint tokens, can only be called by the owner
-    function mint(address _to, uint _amount) public {
-        require(msg.sender == owner, "Only the owner can mint tokens.");
-        totalSupply += _amount;
-        balances[_to] += _amount;
+    // Only the contract owner can mint new tokens to a given address
+    function mintTokens(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
     }
 
-    // Transfer function to send tokens to another address
-    function transfer(address _to, uint _amount) public {
-        require(balances[msg.sender] >= _amount, "Insufficient balance.");
-        balances[msg.sender] -= _amount;
-        balances[_to] += _amount;
-        totalSupply -= _amount;
-
-    }
-
-    // Burn function to allow users to destroy their own tokens
-    function burn(uint _amount) public {
-        require(balances[msg.sender] >= _amount, "Insufficient balance to burn.");
-        totalSupply -= _amount;
-        balances[msg.sender] -= _amount;
+    // Any user can burn their own tokens
+    function burnTokens(uint256 amount) external {
+        _burn(msg.sender, amount);
     }
 }
